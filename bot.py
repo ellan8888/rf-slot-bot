@@ -407,7 +407,7 @@ class ManageRFModal(discord.ui.Modal, title="Manajemen RF"):
 
 @bot.event
 async def on_ready():
-    print(f"Bot online pantai {bot.user}")
+    print(f"Bot ku online {bot.user}")
     channel = discord.utils.get(bot.get_all_channels(), name=CHANNEL_NAME)
     if channel:
         await update_embed(channel)
