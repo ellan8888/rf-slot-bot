@@ -217,30 +217,79 @@ class SlotView(discord.ui.View):
 
     @discord.ui.button(label="Check Status", style=discord.ButtonStyle.primary)
     async def status(self, interaction: discord.Interaction, button: discord.ui.Button):
+
         data = load_data()
+
+        all_rf = load_rf_list()
+        total_rf = len(all_rf)
 
         used_rf = set()
         for slots in data.values():
             for s in slots:
                 used_rf.add(s["rf"])
 
-        all_rf = load_rf_list()
-
-        total_rf = len(all_rf)
         used_count = len(used_rf)
-        empty_count = max(total_rf - used_count, 0)
 
-        now = datetime.now(TZ).strftime("%H:%M")
+        empty_rf = sorted(list(all_rf - used_rf))
+        empty_count = len(empty_rf)
 
-        text = (
-            "📊 **STATUS SLOT**\n\n"
-            f"🔄 **Lagi Digunakan** : {used_count}\n"
-            f"📭 **Slot Kosong**   : {empty_count}\n\n"
-            f"Today at {now}"
+        # ==== PROGRESS BAR ====
+        if total_rf == 0:
+            percent = 0
+        else:
+            percent = int((used_count / total_rf) * 100)
+
+        # progress bar panjang 10 blok
+        bar_total = 10
+        filled = int((percent / 100) * bar_total)
+
+        bar = "▰" * filled + "▱" * (bar_total - filled)
+
+        now = datetime.now(TZ)
+
+        # ==== EMBED ====
+        embed = discord.Embed(
+            title="📊 STATUS RF SLOT",
+            color=0x2b2d31  # abu2 tua seperti screenshot
+        )
+
+        embed.add_field(
+            name="Progress Penggunaan",
+            value=f"{bar}  **{percent}%**",
+            inline=False
+        )
+
+        embed.add_field(
+            name="🛠 Sedang Dipakai",
+            value=f"**{used_count}**",
+            inline=True
+        )
+
+        embed.add_field(
+            name="📭 Slot Kosong",
+            value=f"**{empty_count}**",
+            inline=True
+        )
+
+        embed.add_field(
+            name="👥 Total Slot",
+            value=f"**{total_rf}**",
+            inline=True
+        )
+
+        if empty_rf:
+            embed.add_field(
+                name="RF Kosong",
+                value=", ".join([str(x) for x in empty_rf]),
+                inline=False
+            )
+
+        embed.set_footer(
+            text=f"Today at {now.strftime('%H:%M')}"
         )
 
         await interaction.response.send_message(
-            text,
+            embed=embed,
             ephemeral=True
         )
 
